@@ -1,0 +1,10 @@
+name: DamagesLogger
+description: 
+main: net.lnfinity.DamagesLogger.DamagesLogger
+version: 0.1
+
+commands:
+  dl:
+    description: Main command
+    aliases: [dl]
+    usage: /dl
