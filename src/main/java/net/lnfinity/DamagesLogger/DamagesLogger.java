@@ -1,11 +1,16 @@
 package net.lnfinity.DamagesLogger;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import net.lnfinity.DamagesLogger.damages.GivenDamage;
 import net.lnfinity.DamagesLogger.damages.PlayerDamage;
 import net.lnfinity.DamagesLogger.listeners.CommandListener;
 import net.lnfinity.DamagesLogger.listeners.DamagesListener;
@@ -72,37 +77,60 @@ public class DamagesLogger extends JavaPlugin {
 		return null;
 	}
 
-	public void exportToFile() {
+	public String exportToFile() throws IOException {
 		PrintWriter writer;
-		try {
-			writer = new PrintWriter("logs.txt", "UTF-8");
-			writer.println("<report>");
-			for (int i = 0; i < players.size(); i++) {
-				writer.println(" <player name='" + this.getServer().getPlayer(players.get(i).getId()).getName()
-						+ "' hp='" + players.get(i).getHealth() + "'>");
-				writer.println("  <damagestaken>");
-				for (int t = 0; t < players.get(i).getDamagesTaken().size(); t++) {
-					String attribute = "";
-					if (players.get(i).getDamagesTaken().get(t) instanceof PlayerDamage) {
-						attribute = " damager='"
-								+ this.getServer()
-										.getPlayer(
-												((PlayerDamage) players.get(i).getDamagesTaken().get(t)).getPlayer()
-														.getId()).getName() + "'";
-					}
-					writer.println("   <damage type='"
-							+ players.get(i).getDamagesTaken().get(t).getDamage().toString().toLowerCase() + "' hp='"
-							+ players.get(i).getDamagesTaken().get(t).getHearths() + "'" + attribute + " />");
-				}
-				writer.println("  </damagestaken>");
-				writer.println(" </player>");
-			}
-			writer.println("</report>");
-			writer.close();
-		} catch (FileNotFoundException | UnsupportedEncodingException e) {
-			e.printStackTrace();
+		Date date = new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+		String formattedDate = sdf.format(date);
+		File file = new File("tracker/data_" + formattedDate + ".txt");
+		File folder = new File("tracker");
+		if (!folder.exists() && !folder.isDirectory()) {
+			new File("tracker").mkdir();
 		}
+		this.getLogger().info(file.getAbsolutePath());
+		file.createNewFile();
+		writer = new PrintWriter(file.getAbsolutePath(), "UTF-8");
+		writer.println("<report>");
+		for (int i = 0; i < players.size(); i++) {
+			writer.println(" <player name='" + this.getServer().getPlayer(players.get(i).getId()).getName() + "' hp='"
+					+ players.get(i).getHealth() + "'>");
+			writer.println("  <damagestaken>");
+			for (int t = 0; t < players.get(i).getDamagesTaken().size(); t++) {
+				String attribute = "";
+				if (players.get(i).getDamagesTaken().get(t) instanceof PlayerDamage) {
+					attribute = " damager='"
+							+ this.getServer()
+									.getPlayer(
+											((PlayerDamage) players.get(i).getDamagesTaken().get(t)).getPlayer()
+													.getId()).getName() + "'";
+				}
+				writer.println("   <damage type='"
+						+ players.get(i).getDamagesTaken().get(t).getDamage().toString().toLowerCase() + "' hp='"
+						+ players.get(i).getDamagesTaken().get(t).getHearths() + "'" + attribute + " />");
+			}
+			writer.println("  </damagestaken>");
+			writer.println("  <damagesgiven>");
 
+			for (int t = 0; t < players.get(i).getDamagesGiven().size(); t++) {
+				String attribute = "";
+				if (players.get(i).getDamagesGiven().get(t) instanceof GivenDamage) {
+					attribute = " target='"
+							+ this.getServer()
+									.getPlayer(
+											((GivenDamage) players.get(i).getDamagesGiven().get(t)).getTarget().getId())
+									.getName() + "'";
+				}
+				writer.println("   <damage type='"
+						+ players.get(i).getDamagesGiven().get(t).getDamage().toString().toLowerCase() + "' hp='"
+						+ players.get(i).getDamagesGiven().get(t).getHearths() + "'" + attribute + " />");
+			}
+
+			writer.println("  </damagesgiven>");
+			writer.println(" </player>");
+		}
+		writer.println("</report>");
+		writer.close();
+		return file.getPath();
 	}
 
 }
