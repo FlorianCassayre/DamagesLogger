@@ -1,7 +1,16 @@
+# Eclipse
 .classpath
 .project
-target
-.settings
-bin/
-nogit/
-*~
+.settings/
+
+# Intellij
+.idea/
+*.iml
+*.iws
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+target/
